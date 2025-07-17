@@ -38,7 +38,7 @@ def response_soup(url):
 def lista_categorias(soup, url):
     """Função que recebe uma URL e retorna uma lista de categorias de livros"""
 
-    lista_categorias = []
+    lista_cats = []
     try:
         ul_principal = soup.find("ul", class_="nav nav-list")
         ul_sub = ul_principal.find_next("ul")
@@ -49,16 +49,18 @@ def lista_categorias(soup, url):
                 url, categoria.find("a")["href"]
             )  # Obtém o link da categoria
 
-            lista_categorias.append((no_categoria, link_categoria))
+            lista_cats.append((no_categoria, link_categoria))
 
     except AttributeError as erro:
         print(f"Erro ao encontrar categorias: {erro}")
 
-    return lista_categorias
+    return lista_cats
 
 
 def listar_titulos(categorias, url):
+
     """Função que recebe a lista de categorias e retorna com os titulos dos livro de cada categoria"""
+
     lista_titulos = []
     for categoria in categorias:
         cat = categoria[0]
@@ -88,7 +90,8 @@ def listar_titulos(categorias, url):
     return lista_titulos
 
 
-def detalhes_livro(lista_titulos):
+def detalhes_livro(lista_titulos, url):
+
     """Função que recebe a lista de livros e retorna os detalhes de cada um."""
 
     detalhes = []
@@ -98,6 +101,10 @@ def detalhes_livro(lista_titulos):
     for titulos in lista_titulos:
         categoria, url_categoria, titulo, link_livro = titulos
         soup = response_soup(link_livro)
+
+        # Captura a url da imagem do livro
+        url_imagem  = soup.find("img")["src"]
+        url_imagem_completa = urljoin(url, url_imagem)
 
         # Obtém os detalhes do livro
         descricao_div_ant = soup.find("div", id="product_description")
@@ -112,6 +119,16 @@ def detalhes_livro(lista_titulos):
         qtde_estrelas = estrelas_dicionario.get(estrelas_objeto, 0)
 
         # Retorna informações do produto
+
+        # Inicializa as variáveis
+        var_upc = ""
+        tipo_produto = ""
+        preco_excl_tax = ""
+        preco_incl_tax = ""
+        imposto = ""
+        disponibilidade_produto = 0
+        numero_reviews = 0
+
         tabela_detalhes = soup.find("table", class_="table table-striped")
         if tabela_detalhes:
             for linha in tabela_detalhes.find_all("tr"):
@@ -138,6 +155,7 @@ def detalhes_livro(lista_titulos):
                 "url_categoria": url_categoria,
                 "titulo": titulo,
                 "link_livro": link_livro,
+                "url_imagem": url_imagem_completa,
                 "descricao_produto": descricao_produto,
                 "qtde_estrelas": qtde_estrelas,
                 "upc": var_upc,
@@ -155,11 +173,13 @@ def detalhes_livro(lista_titulos):
 
 
 def main():
+
     """Função principal para raspar o site Books to Scrape"""
+
     soup = response_soup(url)
     categorias = lista_categorias(soup, url)
     titulos = listar_titulos(categorias, url)
-    detalhes = detalhes_livro(titulos)
+    detalhes = detalhes_livro(titulos, url)
     path_salvar = path_completo("books_dataset.csv")
 
     df_books = DataFrame(detalhes)
