@@ -16,7 +16,7 @@ def retorna_inteiro(texto):
 
 
 def path_completo(nome_arquivo_csv):
-    pasta_atual = os.path.dirname(os.path.abspath(__file__)).replace("scripts", "data")
+    pasta_atual = os.path.dirname(os.path.abspath(__file__)).replace("\\scripts", "\\data")
     os.makedirs(pasta_atual, exist_ok=True)
     caminho_completo_csv = os.path.join(pasta_atual, nome_arquivo_csv)
     return caminho_completo_csv
@@ -183,7 +183,8 @@ def main():
     path_salvar = path_completo("books_dataset.csv")
 
     df_books = DataFrame(detalhes)
-    df_books.to_csv(path_salvar, index=False, encoding="utf-8", sep=";")
+    df_books.index.name = "id"
+    df_books.to_csv(path_salvar, encoding="utf-8", sep=";")
 
 
 if __name__ == "__main__":

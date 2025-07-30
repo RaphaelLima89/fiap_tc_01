@@ -141,6 +141,23 @@ def stats_categories():
     stats_categories = stats_categories.reset_index().to_dict(orient="records")
     return {"stats_categories": stats_categories}
 
+@app.get("/api/v1/books/top-rated")
+def top_rated_books(top: Optional[int] =50):
+    """
+    Endpoint para obter os livros mais bem avaliados.
+    Observar que a consulta não é determinística, ou seja, a cada execução pode retornar livros diferentes.
+    """
+
+    df_livros = carregar_dataframe()
+    if df_livros.empty:
+        raise HTTPException(status_code=404, detail="Dados não disponíveis.")
+    top_rated = df_livros.nlargest(top, "qtde_estrelas")
+    colunas_filtradas = ["id", "categoria", "titulo", "qtde_estrelas"]
+    top_rated = top_rated[colunas_filtradas]
+
+    return top_rated.to_dict(orient="records")
+
+
 @app.get("/api/v1/stats/price-range")
 def stats_price_range(min: float, max: float):
 
