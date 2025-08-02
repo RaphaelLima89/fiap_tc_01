@@ -24,7 +24,7 @@ def carregar_dataframe():
     """
     Função que carrega o DataFrame de livros a partir de um arquivo CSV.
     """
-    # path_csv = os.path.join(os.path.dirname(__file__),  "books_dataset.csv").replace("\\api\\", "\\data\\")
+
     path_csv = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     path_csv = os.path.join(path_csv, "data")
 
