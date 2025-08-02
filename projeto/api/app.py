@@ -2,15 +2,22 @@ from fastapi import FastAPI
 from fastapi import HTTPException
 from pandas import read_csv
 from pandas import DataFrame
+from pandas import concat
 import os
 from typing import Optional
-
+import auth
+from auth import get_current_user
+from fastapi import Depends
+from sklearn.model_selection import train_test_split
+from modelo_utils import EntradaModelo, prever_categoria
 
 app = FastAPI(
     title="API Pública para Consulta de Livros",
     version="1.0.0",
     description="API para consulta de livros do site Book to Scrape, categorias e detalhes de livros.",
 )
+
+app.include_router(auth.router)
 
 def carregar_dataframe():
     """
@@ -171,10 +178,104 @@ def stats_price_range(min: float, max: float):
 
     selecao = df_livros[(df_livros["preco_incl_tax"] >= min) & (df_livros["preco_incl_tax"] <= max)]
 
-    colunas_filtradas = ["id", "categoria", "titulo", "categoria", "preco_incl_tax", "qtde_estrelas"]
+    colunas_filtradas = ["id", "categoria", "titulo", "preco_incl_tax", "qtde_estrelas"]
     selecao = selecao[colunas_filtradas]
 
     if selecao.empty:
         raise HTTPException(status_code=404, detail="Nenhum livro encontrado nesse intervalo de preço.")
 
     return selecao.to_dict(orient="records")
+
+# Desafio 1: Endpoints com Autenticação
+
+@app.get("/api/v1/scraping/trigger")
+def scraping_trigger(user: str = Depends(get_current_user)):
+    """
+    Endpoint para acionar o scraping de livros.
+    Necessário autenticação JWT.
+    """
+    return {"message": "Scraping acionado com sucesso."}
+
+
+# Desafio 2: Pipeline ML-Ready
+@app.get("/api/v1/ml/features")
+def ml_features():
+    """
+    Endpoint para retornar as features utilizadas no modelo de Machine Learning.
+    Para ajudar na inspeção dos dados, serão retornados os tipos de dados, informações estatísticas e as primeiras 50 observações.
+    """
+    features = [
+        "categoria",
+        "preco_incl_tax",
+        "disponibilidade_produto",
+        "qtde_estrelas"
+    ]
+
+    df_livros = carregar_dataframe()
+    if df_livros.empty:
+        raise HTTPException(status_code=404, detail="Dados não disponíveis.")
+    
+    df_features = df_livros[features].copy()
+    
+    dataType = df_features.dtypes.apply(lambda x: str(x)).to_dict()
+    infoEstat = df_features.describe().to_dict()
+    features = df_features.head(50).to_dict(orient="records")
+
+    return {
+        "dataType": dataType,
+        "infoEstat": infoEstat,
+        "features": features
+    }
+    
+@app.get("/api/v1/ml/training-data")
+def ml_training_data():
+    """
+    Enddpoint para retornar os dados de treinamento para um modelo de Machine Learning.
+    Foi adotada a divisão de treino e teste, com 70% das observações para treino e 30% para teste.
+    Para garantir a reprodutibilidade, foi fixado o random_state em 42.
+    """
+
+    var_independente = [
+        "preco_incl_tax",
+        "disponibilidade_produto",
+        "qtde_estrelas"
+    ]
+
+    var_dependente = "categoria"
+
+    colunas_necessarias = var_independente + [var_dependente]
+
+    df_livros = carregar_dataframe()
+    if df_livros.empty:
+        raise HTTPException(status_code=404, detail="Dados não disponíveis.")
+    
+    df_ml = df_livros[colunas_necessarias]
+
+    # Divisão entre variáveis independentes e dependentes
+    X = df_ml[var_independente]
+    y = df_ml[var_dependente]
+
+    # Divisão em conjunto de treino e teste
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # Concatenando os conjuntos de treino e teste
+    train = concat([X_train, y_train.reset_index(drop=True)], axis=1).dropna()
+    test = concat([X_test, y_test.reset_index(drop=True)], axis=1).dropna()
+
+    return{
+        "train": train.to_dict(orient="records"),
+        "test": test.to_dict(orient="records")
+    }
+
+@app.post('/api/v1/ml/predictions')
+def fazer_predicao(payload: EntradaModelo):
+    """
+    Os valores previstos nesse endpoint são de caráter informativo e mostram o potencial da API
+    A acurácia do modelo utilizado é de apenas 16%.
+    """
+    try:
+        df = DataFrame([item.dict() for item in payload.itens])
+        resultado = prever_categoria(df)
+        return resultado.to_dict(orient="records")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
