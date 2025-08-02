@@ -1,21 +1,39 @@
+import os
 from fastapi import FastAPI
 from fastapi import HTTPException
 from pandas import read_csv
 from pandas import DataFrame
 from pandas import concat
-import os
 from typing import Optional
 import auth
 from auth import get_current_user
 from fastapi import Depends
 from sklearn.model_selection import train_test_split
 from modelo_utils import EntradaModelo, prever_categoria
+from log_config import configurar_logger
+from fastapi import Request
+import time
+
+logger = configurar_logger()
 
 app = FastAPI(
     title="API Pública para Consulta de Livros",
     version="1.0.0",
     description="API para consulta de livros do site Book to Scrape, categorias e detalhes de livros.",
 )
+
+@app.middleware("http")
+async def log_requisicoes(request: Request, call_next):
+    inicio = time.time()
+    resposta = await call_next(request)
+    duracao = round(time.time() - inicio, 4)
+    client_ip = request.client.host
+
+    logger.info(
+        f'ip="{client_ip}", endpoint="{request.url.path}", method="{request.method}", status_code={resposta.status_code}, exec_time={duracao}s'
+    )
+
+    return resposta
 
 app.include_router(auth.router)
 
@@ -26,7 +44,7 @@ def carregar_dataframe():
     """
 
     path_csv = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    path_csv = os.path.join(path_csv, "data")
+    path_csv = os.path.join(path_csv, "data", "books_dataset.csv")
 
     if not os.path.exists(path_csv):
         print("Arquivo CSV não encontrada. Tente rodar novamente o script de raspagem.")
@@ -72,20 +90,6 @@ def buscar_livros(titulo: Optional[str] = None, categoria: Optional[str] = None)
     return selecao.to_dict(orient="records")
 
 
-@app.get("/api/v1/books/{id_livro}")
-def retorna_livro_por_id(id_livro: int):
-    """
-    Endpoint para retornar livro específico pelo ID.
-    """
-
-    df_livros = carregar_dataframe()
-    livro_selecionado = df_livros[df_livros["id"] == id_livro]
-    if livro_selecionado.empty:
-        raise HTTPException(status_code=404, detail="Livro não encontrado.")
-
-    return livro_selecionado.to_dict(orient="records")[0]
-
-
 @app.get("/api/v1/categories")
 def listar_categorias():
     """
@@ -109,7 +113,7 @@ def health_check():
     if df_livros.empty:
         raise HTTPException(
             status_code=500,
-            detail="API online, mas o dataset não pôde ser carregados corretamente.",
+            detail="API online, mas o dataset não pôde ser carregado corretamente.",
         )
 
     return {"status": "API online e dataset carregado."}
@@ -180,6 +184,20 @@ def top_rated_books(top: Optional[int] = 50):
     return top_rated.to_dict(orient="records")
 
 
+
+@app.get("/api/v1/books/{id_livro}")
+def retorna_livro_por_id(id_livro: int):
+    """
+    Endpoint para retornar livro específico pelo ID.
+    """
+
+    df_livros = carregar_dataframe()
+    livro_selecionado = df_livros[df_livros["id"] == id_livro]
+    if livro_selecionado.empty:
+        raise HTTPException(status_code=404, detail="Livro não encontrado.")
+
+    return livro_selecionado.to_dict(orient="records")[0]
+
 @app.get("/api/v1/stats/price-range")
 def stats_price_range(min: float, max: float):
     """
@@ -207,7 +225,6 @@ def stats_price_range(min: float, max: float):
 
 # Desafio 1: Endpoints com Autenticação
 
-
 @app.get("/api/v1/scraping/trigger")
 def scraping_trigger(user: str = Depends(get_current_user)):
     """
@@ -218,6 +235,7 @@ def scraping_trigger(user: str = Depends(get_current_user)):
 
 
 # Desafio 2: Pipeline ML-Ready
+
 @app.get("/api/v1/ml/features")
 def ml_features():
     """
@@ -247,7 +265,7 @@ def ml_features():
 @app.get("/api/v1/ml/training-data")
 def ml_training_data():
     """
-    Enddpoint para retornar os dados de treinamento para um modelo de Machine Learning.
+    Endpoint para retornar os dados de treinamento para um modelo de Machine Learning.
     Foi adotada a divisão de treino e teste, com 70% das observações para treino e 30% para teste.
     Para garantir a reprodutibilidade, foi fixado o random_state em 42.
     """
