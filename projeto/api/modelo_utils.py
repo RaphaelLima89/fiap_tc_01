@@ -5,8 +5,12 @@ from pydantic import BaseModel
 from typing import List
 
 # Carregando o modelo e o encoder
-path_model = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models", "modelo_bookscrape.pkl"))
-path_encoder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models", "encoder.pkl"))
+path_model = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "models", "modelo_bookscrape.pkl")
+)
+path_encoder = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "models", "encoder.pkl")
+)
 
 try:
     modelo = joblib.load(path_model)
@@ -14,15 +18,17 @@ try:
 except Exception as e:
     raise RuntimeError(f"Erro ao carregaro modelo/encoder: {e}")
 
-#Classes de entrada
+# Classes de entrada
+
 
 class LivroInput(BaseModel):
     preco_incl_tax: float
     disponibilidade_produto: int
     qtde_estrelas: int
 
+
 class EntradaModelo(BaseModel):
-    itens : List[LivroInput]
+    itens: List[LivroInput]
 
 
 # Função para prever a categoria
@@ -31,8 +37,8 @@ def prever_categoria(df: pd.DataFrame) -> pd.DataFrame:
     Recebe um dataframe e retorna com os valores previstos
     """
 
-    features = ['qtde_estrelas', 'preco_incl_tax', 'disponibilidade_produto']
-    
+    features = ["qtde_estrelas", "preco_incl_tax", "disponibilidade_produto"]
+
     try:
         df_filtrado = df[features]
     except KeyError:

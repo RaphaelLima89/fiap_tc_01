@@ -19,19 +19,24 @@ app = FastAPI(
 
 app.include_router(auth.router)
 
+
 def carregar_dataframe():
     """
     Função que carrega o DataFrame de livros a partir de um arquivo CSV.
     """
-    path_csv = os.path.join(os.path.dirname(__file__),  "books_dataset.csv").replace("\\api\\", "\\data\\")
+    # path_csv = os.path.join(os.path.dirname(__file__),  "books_dataset.csv").replace("\\api\\", "\\data\\")
+    path_csv = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path_csv = os.path.join(path_csv, "data")
+
     if not os.path.exists(path_csv):
         print("Arquivo CSV não encontrada. Tente rodar novamente o script de raspagem.")
         return DataFrame()
     df_livros = read_csv(path_csv, encoding="utf-8", header=0, sep=";")
     return df_livros
-    
+
 
 # Endpoints Core
+
 
 @app.get("/api/v1/books")
 def listar_livros():
@@ -46,7 +51,6 @@ def listar_livros():
 
 @app.get("/api/v1/books/search")
 def buscar_livros(titulo: Optional[str] = None, categoria: Optional[str] = None):
-
     """
     Endpoint para buscar livros por título e/ou categoria.
     """
@@ -58,11 +62,13 @@ def buscar_livros(titulo: Optional[str] = None, categoria: Optional[str] = None)
     if titulo is not None and titulo != "":
         selecao = selecao[selecao["titulo"].str.contains(titulo, case=False, na=False)]
     if categoria is not None and categoria != "":
-        selecao = selecao[selecao["categoria"].str.contains(categoria, case=False, na=False)] 
-                        
+        selecao = selecao[
+            selecao["categoria"].str.contains(categoria, case=False, na=False)
+        ]
+
     if selecao.empty:
         raise HTTPException(status_code=404, detail="Busca não retornou nenhum livro.")
-    
+
     return selecao.to_dict(orient="records")
 
 
@@ -78,6 +84,7 @@ def retorna_livro_por_id(id_livro: int):
         raise HTTPException(status_code=404, detail="Livro não encontrado.")
 
     return livro_selecionado.to_dict(orient="records")[0]
+
 
 @app.get("/api/v1/categories")
 def listar_categorias():
@@ -100,15 +107,19 @@ def health_check():
 
     df_livros = carregar_dataframe()
     if df_livros.empty:
-        raise HTTPException(status_code=500, detail="API online, mas o dataset não pôde ser carregados corretamente.")
+        raise HTTPException(
+            status_code=500,
+            detail="API online, mas o dataset não pôde ser carregados corretamente.",
+        )
 
     return {"status": "API online e dataset carregado."}
 
+
 # Endpoints de Insights
+
 
 @app.get("/api/v1/stats/overview")
 def stats_overview():
-
     """
     Endpoint para obter uma visão geral dos dados.
     """
@@ -119,37 +130,41 @@ def stats_overview():
 
     total_livros = len(df_livros)
     preco_medio = df_livros["preco_incl_tax"].mean()
-    distribuicao_rating = df_livros["qtde_estrelas"].value_counts().sort_index().to_dict()
+    distribuicao_rating = (
+        df_livros["qtde_estrelas"].value_counts().sort_index().to_dict()
+    )
 
     return {
         "total_livros": total_livros,
         "preco_medio": preco_medio,
-        "distribuicao_rating": distribuicao_rating
+        "distribuicao_rating": distribuicao_rating,
     }
 
-    
+
 @app.get("/api/v1/stats/categories")
 def stats_categories():
-
     """
     Endpoint com as estatísitcas por categoria.
     """
 
     df_livros = carregar_dataframe()
     if df_livros.empty:
-        raise HTTPException(status_code=404, detail="Estatísticas por categoria não disponíveis.")
-    
+        raise HTTPException(
+            status_code=404, detail="Estatísticas por categoria não disponíveis."
+        )
+
     stats_categories = df_livros.groupby("categoria").agg(
         total_livros=("id", "count"),
         preco_medio=("preco_incl_tax", "mean"),
-        rating_medio=("qtde_estrelas", "mean")
+        rating_medio=("qtde_estrelas", "mean"),
     )
 
     stats_categories = stats_categories.reset_index().to_dict(orient="records")
     return {"stats_categories": stats_categories}
 
+
 @app.get("/api/v1/books/top-rated")
-def top_rated_books(top: Optional[int] =50):
+def top_rated_books(top: Optional[int] = 50):
     """
     Endpoint para obter os livros mais bem avaliados.
     Observar que a consulta não é determinística, ou seja, a cada execução pode retornar livros diferentes.
@@ -167,7 +182,6 @@ def top_rated_books(top: Optional[int] =50):
 
 @app.get("/api/v1/stats/price-range")
 def stats_price_range(min: float, max: float):
-
     """
     Endpoint para obter os livros dentro de um intervalo de preço.
     """
@@ -176,17 +190,23 @@ def stats_price_range(min: float, max: float):
     if df_livros.empty:
         raise HTTPException(status_code=404, detail="Dados não disponíveis.")
 
-    selecao = df_livros[(df_livros["preco_incl_tax"] >= min) & (df_livros["preco_incl_tax"] <= max)]
+    selecao = df_livros[
+        (df_livros["preco_incl_tax"] >= min) & (df_livros["preco_incl_tax"] <= max)
+    ]
 
     colunas_filtradas = ["id", "categoria", "titulo", "preco_incl_tax", "qtde_estrelas"]
     selecao = selecao[colunas_filtradas]
 
     if selecao.empty:
-        raise HTTPException(status_code=404, detail="Nenhum livro encontrado nesse intervalo de preço.")
+        raise HTTPException(
+            status_code=404, detail="Nenhum livro encontrado nesse intervalo de preço."
+        )
 
     return selecao.to_dict(orient="records")
 
+
 # Desafio 1: Endpoints com Autenticação
+
 
 @app.get("/api/v1/scraping/trigger")
 def scraping_trigger(user: str = Depends(get_current_user)):
@@ -208,25 +228,22 @@ def ml_features():
         "categoria",
         "preco_incl_tax",
         "disponibilidade_produto",
-        "qtde_estrelas"
+        "qtde_estrelas",
     ]
 
     df_livros = carregar_dataframe()
     if df_livros.empty:
         raise HTTPException(status_code=404, detail="Dados não disponíveis.")
-    
+
     df_features = df_livros[features].copy()
-    
+
     dataType = df_features.dtypes.apply(lambda x: str(x)).to_dict()
     infoEstat = df_features.describe().to_dict()
     features = df_features.head(50).to_dict(orient="records")
 
-    return {
-        "dataType": dataType,
-        "infoEstat": infoEstat,
-        "features": features
-    }
-    
+    return {"dataType": dataType, "infoEstat": infoEstat, "features": features}
+
+
 @app.get("/api/v1/ml/training-data")
 def ml_training_data():
     """
@@ -235,11 +252,7 @@ def ml_training_data():
     Para garantir a reprodutibilidade, foi fixado o random_state em 42.
     """
 
-    var_independente = [
-        "preco_incl_tax",
-        "disponibilidade_produto",
-        "qtde_estrelas"
-    ]
+    var_independente = ["preco_incl_tax", "disponibilidade_produto", "qtde_estrelas"]
 
     var_dependente = "categoria"
 
@@ -248,7 +261,7 @@ def ml_training_data():
     df_livros = carregar_dataframe()
     if df_livros.empty:
         raise HTTPException(status_code=404, detail="Dados não disponíveis.")
-    
+
     df_ml = df_livros[colunas_necessarias]
 
     # Divisão entre variáveis independentes e dependentes
@@ -256,18 +269,21 @@ def ml_training_data():
     y = df_ml[var_dependente]
 
     # Divisão em conjunto de treino e teste
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=42
+    )
 
     # Concatenando os conjuntos de treino e teste
     train = concat([X_train, y_train.reset_index(drop=True)], axis=1).dropna()
     test = concat([X_test, y_test.reset_index(drop=True)], axis=1).dropna()
 
-    return{
+    return {
         "train": train.to_dict(orient="records"),
-        "test": test.to_dict(orient="records")
+        "test": test.to_dict(orient="records"),
     }
 
-@app.post('/api/v1/ml/predictions')
+
+@app.post("/api/v1/ml/predictions")
 def fazer_predicao(payload: EntradaModelo):
     """
     Os valores previstos nesse endpoint são de caráter informativo e mostram o potencial da API

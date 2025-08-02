@@ -4,6 +4,7 @@ import os
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from pandas import DataFrame
+from tqdm import tqdm
 
 url = "https://books.toscrape.com/"  # URL em que será aplicada a raspagem
 
@@ -16,7 +17,8 @@ def retorna_inteiro(texto):
 
 
 def path_completo(nome_arquivo_csv):
-    pasta_atual = os.path.dirname(os.path.abspath(__file__)).replace("\\scripts", "\\data")
+    pasta_atual = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    pasta_atual = os.path.join(pasta_atual, "data")
     os.makedirs(pasta_atual, exist_ok=True)
     caminho_completo_csv = os.path.join(pasta_atual, nome_arquivo_csv)
     return caminho_completo_csv
@@ -26,7 +28,7 @@ def response_soup(url):
     """Recebe uma URL e retorna o objeto BeautifulSoup."""
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         response.encoding = "utf-8"
         soup = BeautifulSoup(response.text, "html.parser")
         return soup
@@ -43,7 +45,9 @@ def lista_categorias(soup, url):
         ul_principal = soup.find("ul", class_="nav nav-list")
         ul_sub = ul_principal.find_next("ul")
 
-        for categoria in ul_sub.find_all("li"):
+        for categoria in tqdm(
+            ul_sub.find_all("li"), desc="Extraindo categorias", ncols=100
+        ):
             no_categoria = categoria.get_text(strip=True)
             link_categoria = urljoin(
                 url, categoria.find("a")["href"]
@@ -58,11 +62,12 @@ def lista_categorias(soup, url):
 
 
 def listar_titulos(categorias, url):
-
     """Função que recebe a lista de categorias e retorna com os titulos dos livro de cada categoria"""
 
     lista_titulos = []
-    for categoria in categorias:
+    for categoria in tqdm(
+        categorias, desc="Extraindo a relação de titulos por categoria", ncols=100
+    ):
         cat = categoria[0]
         link_categoria = categoria[1]
         url_atual = link_categoria
@@ -91,19 +96,20 @@ def listar_titulos(categorias, url):
 
 
 def detalhes_livro(lista_titulos, url):
-
     """Função que recebe a lista de livros e retorna os detalhes de cada um."""
 
     detalhes = []
 
     estrelas_dicionario = {"One": 1, "Two": 2, "Three": 3, "Four": 4, "Five": 5}
 
-    for titulos in lista_titulos:
+    for titulos in tqdm(lista_titulos, desc="Extraindo detalhes dos livros", ncols=100):
         categoria, url_categoria, titulo, link_livro = titulos
         soup = response_soup(link_livro)
+        if not soup:
+            continue
 
         # Captura a url da imagem do livro
-        url_imagem  = soup.find("img")["src"]
+        url_imagem = soup.find("img")["src"]
         url_imagem_completa = urljoin(url, url_imagem)
 
         # Obtém os detalhes do livro
@@ -173,8 +179,9 @@ def detalhes_livro(lista_titulos, url):
 
 
 def main():
-
     """Função principal para raspar o site Books to Scrape"""
+
+    print("\nIniciando a raspagem dos livros ...")
 
     soup = response_soup(url)
     categorias = lista_categorias(soup, url)
@@ -186,6 +193,7 @@ def main():
     df_books.index.name = "id"
     df_books.to_csv(path_salvar, encoding="utf-8", sep=";")
 
+    print(f"\nRaspagem finalizada!!!")
 
 if __name__ == "__main__":
     main()
