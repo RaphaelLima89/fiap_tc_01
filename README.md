@@ -58,5 +58,5 @@ O projeto foi todo desenvolvido em a linguagem **Python 3.13.4** e as principais
 ### 1. Clone o repositório
 
 ```bash
-git clone 
-
+git clone https://github.com/RaphaelLima89/fiap_tc_01
+cd 
