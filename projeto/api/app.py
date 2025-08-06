@@ -13,8 +13,9 @@ from modelo_utils import EntradaModelo, prever_categoria
 from log_config import configurar_logger
 from fastapi import Request
 import time
+from prometheus_fastapi_instrumentator import Instrumentator
 
-logger = configurar_logger()
+#Inicializando o FastAPI
 
 app = FastAPI(
     title="API Pública para Consulta de Livros",
@@ -22,6 +23,10 @@ app = FastAPI(
     description="API para consulta de livros do site Book to Scrape, categorias e detalhes de livros.",
 )
 
+# Chamando o Logging 
+logger = configurar_logger()
+
+# Utilizado o middleware para ativar o log de todas as requisições
 @app.middleware("http")
 async def log_requisicoes(request: Request, call_next):
     inicio = time.time()
@@ -34,6 +39,9 @@ async def log_requisicoes(request: Request, call_next):
     )
 
     return resposta
+
+# Inicializando o Prometheus para monitoramento de performance da API e criando o endpoint /metrics
+Instrumentator().instrument(app).expose(app)
 
 app.include_router(auth.router)
 
@@ -304,8 +312,8 @@ def ml_training_data():
 @app.post("/api/v1/ml/predictions")
 def fazer_predicao(payload: EntradaModelo):
     """
-    Os valores previstos nesse endpoint são de caráter informativo e mostram o potencial da API
-    A acurácia do modelo utilizado é de apenas 16%.
+    Os valores previstos nesse endpoint são de caráter informativo e mostram o potencial da API para incorporar modelos de ML.
+    \nA acurácia do modelo utilizado é de apenas 16%, por isso não deve ser utilizada para tomada de decisões.
     """
     try:
         df = DataFrame([item.dict() for item in payload.itens])
