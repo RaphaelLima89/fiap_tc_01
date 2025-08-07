@@ -33,3 +33,14 @@
 {"time": "2025-08-02 17:33:16", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/metrics", method="GET", status_code=200, exec_time=0.0042s" }
 {"time": "2025-08-02 17:36:17", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/api/v1/books", method="GET", status_code=200, exec_time=0.2783s" }
 {"time": "2025-08-02 17:36:25", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/metrics", method="GET", status_code=200, exec_time=0.0017s" }
+{"time": "2025-08-05 23:04:11", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/docs", method="GET", status_code=200, exec_time=0.0005s" }
+{"time": "2025-08-05 23:04:21", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/openapi.json", method="GET", status_code=200, exec_time=0.0093s" }
+{"time": "2025-08-07 06:13:04", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/", method="GET", status_code=404, exec_time=0.0009s" }
+{"time": "2025-08-07 06:13:04", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/favicon.ico", method="GET", status_code=404, exec_time=0.0004s" }
+{"time": "2025-08-07 06:13:12", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/docs", method="GET", status_code=200, exec_time=0.0004s" }
+{"time": "2025-08-07 06:13:12", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/openapi.json", method="GET", status_code=200, exec_time=0.0065s" }
+{"time": "2025-08-07 06:13:38", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/api/v1/books/1", method="GET", status_code=200, exec_time=0.0545s" }
+{"time": "2025-08-07 06:19:43", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/api/v1/books/12", method="GET", status_code=200, exec_time=0.019s" }
+{"time": "2025-08-07 06:19:43", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/favicon.ico", method="GET", status_code=404, exec_time=0.0002s" }
+{"time": "2025-08-07 06:26:43", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/api/v1/categories", method="GET", status_code=200, exec_time=0.0334s" }
+{"time": "2025-08-07 08:03:01", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/api/v1/ml/features", method="GET", status_code=200, exec_time=0.073s" }
