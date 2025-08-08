@@ -85,11 +85,11 @@ python scripts/web_scraping_books.py
 Para evitar **sujeiras** de rastreabilidade, recomenda-se a limpeza do arquivo api.log antes de iniciar o uso da API, ou eventualmente seu deploy.
 
 ### 6. Iniciando a API
-Navegue até a pasta API e então execute o seguinte comando
+Navegue até a pasta Projeto e então execute o seguinte comando
 
 ```bash
-cd api
-uvicorn app:app --reload
+cd projeto
+uvicorn projeto.api.app:app --reload
 ```
 Acesse o endereço [http://localhost:8000/docs](http://localhost:8000/docs) para utilizar a documentação via Swagger.
 

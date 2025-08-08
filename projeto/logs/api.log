@@ -1,0 +1,6 @@
+{"time": "2025-08-07 23:04:36", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/", method="GET", status_code=404, exec_time=0.0005s" }
+{"time": "2025-08-07 23:04:36", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/favicon.ico", method="GET", status_code=404, exec_time=0.0003s" }
+{"time": "2025-08-07 23:04:41", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/docs", method="GET", status_code=200, exec_time=0.0003s" }
+{"time": "2025-08-07 23:04:41", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/openapi.json", method="GET", status_code=200, exec_time=0.0105s" }
+{"time": "2025-08-07 23:04:49", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/api/v1/stats/overview", method="GET", status_code=200, exec_time=0.0251s" }
+{"time": "2025-08-07 23:05:00", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/api/v1/books", method="GET", status_code=200, exec_time=0.0702s" }
