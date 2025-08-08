@@ -5,12 +5,12 @@ from pandas import read_csv
 from pandas import DataFrame
 from pandas import concat
 from typing import Optional
-import auth
-from auth import get_current_user
+from . import auth
+from .auth import get_current_user
 from fastapi import Depends
 from sklearn.model_selection import train_test_split
-from modelo_utils import EntradaModelo, prever_categoria
-from log_config import configurar_logger
+from .modelo_utils import EntradaModelo, prever_categoria
+from .log_config import configurar_logger
 from fastapi import Request
 import time
 
