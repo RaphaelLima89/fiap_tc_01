@@ -195,5 +195,6 @@ def main():
 
     print(f"\nRaspagem finalizada!!!")
 
+
 if __name__ == "__main__":
     main()

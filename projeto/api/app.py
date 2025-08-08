@@ -14,7 +14,7 @@ from log_config import configurar_logger
 from fastapi import Request
 import time
 
-#Inicializando o FastAPI
+# Inicializando o FastAPI
 
 app = FastAPI(
     title="API Pública para Consulta de Livros",
@@ -22,8 +22,9 @@ app = FastAPI(
     description="API para consulta de livros do site Book to Scrape, categorias e detalhes de livros.",
 )
 
-# Chamando o Logging 
+# Chamando o Logging
 logger = configurar_logger()
+
 
 # Utilizado o middleware para ativar o log de todas as requisições
 @app.middleware("http")
@@ -38,6 +39,7 @@ async def log_requisicoes(request: Request, call_next):
     )
 
     return resposta
+
 
 app.include_router(auth.router)
 
@@ -188,7 +190,6 @@ def top_rated_books(top: Optional[int] = 50):
     return top_rated.to_dict(orient="records")
 
 
-
 @app.get("/api/v1/books/{id_livro}", tags=["Core"])
 def retorna_livro_por_id(id_livro: int):
     """
@@ -201,6 +202,7 @@ def retorna_livro_por_id(id_livro: int):
         raise HTTPException(status_code=404, detail="Livro não encontrado.")
 
     return livro_selecionado.to_dict(orient="records")[0]
+
 
 @app.get("/api/v1/stats/price-range", tags=["Insights"])
 def stats_price_range(min: float, max: float):
@@ -229,7 +231,8 @@ def stats_price_range(min: float, max: float):
 
 # Desafio 1: Endpoints com Autenticação
 
-@app.get("/api/v1/scraping/trigger" , tags=["Authentication"])
+
+@app.get("/api/v1/scraping/trigger", tags=["Authentication"])
 def scraping_trigger(user: str = Depends(get_current_user)):
     """
     Endpoint para acionar o scraping de livros.
@@ -239,6 +242,7 @@ def scraping_trigger(user: str = Depends(get_current_user)):
 
 
 # Desafio 2: Pipeline ML-Ready
+
 
 @app.get("/api/v1/ml/features", tags=["ML-Ready"])
 def ml_features():

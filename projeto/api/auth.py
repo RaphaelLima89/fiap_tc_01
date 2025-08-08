@@ -76,6 +76,6 @@ def refresh_token(current_user: str = Depends(get_current_user)):
     """
     new_token = create_access_token(
         data={"sub": current_user},
-        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     return {"access_token": new_token, "token_type": "bearer"}
