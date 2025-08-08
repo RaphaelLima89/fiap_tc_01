@@ -13,7 +13,6 @@ from modelo_utils import EntradaModelo, prever_categoria
 from log_config import configurar_logger
 from fastapi import Request
 import time
-from prometheus_fastapi_instrumentator import Instrumentator
 
 #Inicializando o FastAPI
 
@@ -40,9 +39,6 @@ async def log_requisicoes(request: Request, call_next):
 
     return resposta
 
-# Inicializando o Prometheus para monitoramento de performance da API e criando o endpoint /metrics
-Instrumentator().instrument(app).expose(app)
-
 app.include_router(auth.router)
 
 
@@ -64,7 +60,7 @@ def carregar_dataframe():
 # Endpoints Core
 
 
-@app.get("/api/v1/books")
+@app.get("/api/v1/books", tags=["Core"])
 def listar_livros():
     """
     Endpoint para listar todos os livros disponíveis.
@@ -75,7 +71,7 @@ def listar_livros():
     return df_livros.to_dict(orient="records")
 
 
-@app.get("/api/v1/books/search")
+@app.get("/api/v1/books/search", tags=["Core"])
 def buscar_livros(titulo: Optional[str] = None, categoria: Optional[str] = None):
     """
     Endpoint para buscar livros por título e/ou categoria.
@@ -98,7 +94,7 @@ def buscar_livros(titulo: Optional[str] = None, categoria: Optional[str] = None)
     return selecao.to_dict(orient="records")
 
 
-@app.get("/api/v1/categories")
+@app.get("/api/v1/categories", tags=["Core"])
 def listar_categorias():
     """
     Endpoint para listar as categorias que estão disponíveis no dataset.
@@ -111,7 +107,7 @@ def listar_categorias():
     return {"categorias": lista_categorias}
 
 
-@app.get("/api/v1/health")
+@app.get("/api/v1/health", tags=["Core"])
 def health_check():
     """
     Endpoint para verificar a saúde da API.
@@ -130,7 +126,7 @@ def health_check():
 # Endpoints de Insights
 
 
-@app.get("/api/v1/stats/overview")
+@app.get("/api/v1/stats/overview", tags=["Insights"])
 def stats_overview():
     """
     Endpoint para obter uma visão geral dos dados.
@@ -153,7 +149,7 @@ def stats_overview():
     }
 
 
-@app.get("/api/v1/stats/categories")
+@app.get("/api/v1/stats/categories", tags=["Insights"])
 def stats_categories():
     """
     Endpoint com as estatísitcas por categoria.
@@ -175,7 +171,7 @@ def stats_categories():
     return {"stats_categories": stats_categories}
 
 
-@app.get("/api/v1/books/top-rated")
+@app.get("/api/v1/books/top-rated", tags=["Insights"])
 def top_rated_books(top: Optional[int] = 50):
     """
     Endpoint para obter os livros mais bem avaliados.
@@ -193,7 +189,7 @@ def top_rated_books(top: Optional[int] = 50):
 
 
 
-@app.get("/api/v1/books/{id_livro}")
+@app.get("/api/v1/books/{id_livro}", tags=["Core"])
 def retorna_livro_por_id(id_livro: int):
     """
     Endpoint para retornar livro específico pelo ID.
@@ -206,7 +202,7 @@ def retorna_livro_por_id(id_livro: int):
 
     return livro_selecionado.to_dict(orient="records")[0]
 
-@app.get("/api/v1/stats/price-range")
+@app.get("/api/v1/stats/price-range", tags=["Insights"])
 def stats_price_range(min: float, max: float):
     """
     Endpoint para obter os livros dentro de um intervalo de preço.
@@ -233,7 +229,7 @@ def stats_price_range(min: float, max: float):
 
 # Desafio 1: Endpoints com Autenticação
 
-@app.get("/api/v1/scraping/trigger")
+@app.get("/api/v1/scraping/trigger" , tags=["Authentication"])
 def scraping_trigger(user: str = Depends(get_current_user)):
     """
     Endpoint para acionar o scraping de livros.
@@ -244,7 +240,7 @@ def scraping_trigger(user: str = Depends(get_current_user)):
 
 # Desafio 2: Pipeline ML-Ready
 
-@app.get("/api/v1/ml/features")
+@app.get("/api/v1/ml/features", tags=["ML-Ready"])
 def ml_features():
     """
     Endpoint para retornar as features utilizadas no modelo de Machine Learning.
@@ -270,7 +266,7 @@ def ml_features():
     return {"dataType": dataType, "infoEstat": infoEstat, "features": features}
 
 
-@app.get("/api/v1/ml/training-data")
+@app.get("/api/v1/ml/training-data", tags=["ML-Ready"])
 def ml_training_data():
     """
     Endpoint para retornar os dados de treinamento para um modelo de Machine Learning.
@@ -309,7 +305,7 @@ def ml_training_data():
     }
 
 
-@app.post("/api/v1/ml/predictions")
+@app.post("/api/v1/ml/predictions", tags=["ML-Ready"])
 def fazer_predicao(payload: EntradaModelo):
     """
     Os valores previstos nesse endpoint são de caráter informativo e mostram o potencial da API para incorporar modelos de ML.

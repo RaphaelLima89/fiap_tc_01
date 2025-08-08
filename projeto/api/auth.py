@@ -66,3 +66,16 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Token inválido")
 
     return username
+
+
+@router.post("/refresh")
+def refresh_token(current_user: str = Depends(get_current_user)):
+    """
+    Endpoint para dar um refresh no token JWT
+    É necessário que o token atual ainda esteja válido
+    """
+    new_token = create_access_token(
+        data={"sub": current_user},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    return {"access_token": new_token, "token_type": "bearer"}
