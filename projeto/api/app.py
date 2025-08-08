@@ -190,21 +190,8 @@ def top_rated_books(top: Optional[int] = 50):
     return top_rated.to_dict(orient="records")
 
 
-@app.get("/api/v1/books/{id_livro}", tags=["Core"])
-def retorna_livro_por_id(id_livro: int):
-    """
-    Endpoint para retornar livro específico pelo ID.
-    """
 
-    df_livros = carregar_dataframe()
-    livro_selecionado = df_livros[df_livros["id"] == id_livro]
-    if livro_selecionado.empty:
-        raise HTTPException(status_code=404, detail="Livro não encontrado.")
-
-    return livro_selecionado.to_dict(orient="records")[0]
-
-
-@app.get("/api/v1/stats/price-range", tags=["Insights"])
+@app.get("/api/v1/books/price-range", tags=["Insights"])
 def stats_price_range(min: float, max: float):
     """
     Endpoint para obter os livros dentro de um intervalo de preço.
@@ -228,6 +215,20 @@ def stats_price_range(min: float, max: float):
 
     return selecao.to_dict(orient="records")
 
+
+
+@app.get("/api/v1/books/{id_livro}", tags=["Core"])
+def retorna_livro_por_id(id_livro: int):
+    """
+    Endpoint para retornar livro específico pelo ID.
+    """
+
+    df_livros = carregar_dataframe()
+    livro_selecionado = df_livros[df_livros["id"] == id_livro]
+    if livro_selecionado.empty:
+        raise HTTPException(status_code=404, detail="Livro não encontrado.")
+
+    return livro_selecionado.to_dict(orient="records")[0]
 
 # Desafio 1: Endpoints com Autenticação
 

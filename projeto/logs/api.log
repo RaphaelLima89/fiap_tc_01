@@ -68,3 +68,7 @@
 {"time": "2025-08-07 22:03:38", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/openapi.json", method="GET", status_code=200, exec_time=0.0068s" }
 {"time": "2025-08-07 22:07:00", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/docs", method="GET", status_code=200, exec_time=0.0012s" }
 {"time": "2025-08-07 22:07:00", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/openapi.json", method="GET", status_code=200, exec_time=0.0155s" }
+{"time": "2025-08-07 22:13:39", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/docs", method="GET", status_code=200, exec_time=0.0012s" }
+{"time": "2025-08-07 22:13:39", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/openapi.json", method="GET", status_code=200, exec_time=0.0103s" }
+{"time": "2025-08-07 22:13:58", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/api/v1/books/price-range", method="GET", status_code=422, exec_time=0.0004s" }
+{"time": "2025-08-07 22:14:45", "level": "INFO", "module": "app", "msg": "ip="127.0.0.1", endpoint="/api/v1/books/price-range", method="GET", status_code=200, exec_time=0.0251s" }
