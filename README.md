@@ -21,11 +21,10 @@ Este projeto tem como objetivo implementar uma **API RESTful pública** para con
 
 O projeto foi todo desenvolvido em a linguagem **Python 3.13.4** e as principais bibliotecas foram:
 
-- **FastAPI** - biblioteca principal da API
-- **Prometheus FastAPI Instrumentator** - Métricas e performance da API
-- **JWT** - Autenticação com FastAPI
 - **BeautifulSoup + Requests** - para o Web scraping
 - **Pandas** - para manipulação de dados
+- **FastAPI** - biblioteca principal da API
+- **JWT** - Autenticação com FastAPI
 - **Scikit-Learn** - biblioteca mais difundida na comunidade para modelos de Machine Learning
 - **Joblib** - Realizar a dump dos modelos
 
